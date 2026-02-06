@@ -149,8 +149,8 @@ Then update `k8s/deployment.yaml` to use your image.
 - [x] Core Docker image with dev tools
 - [x] Kubernetes Deployment manifests
 - [x] CLI tool for quick setup
-- [ ] Helm Chart for advanced customization
-- [ ] Auto-Pairing Controller (bypass manual approval for in-cluster nodes)
+- [x] Helm Chart for advanced customization
+- [ ] Auto-Pairing Controller (logic design complete)
 - [ ] Prometheus metrics exporter
 - [ ] GPU-enabled image variant
 - [ ] Multi-Gateway support
