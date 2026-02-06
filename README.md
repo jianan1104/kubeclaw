@@ -144,6 +144,19 @@ Then update `k8s/deployment.yaml` to use your image.
 - **Secret Management**: Gateway tokens are stored as Kubernetes Secrets
 - **Network Policies**: (Coming soon) Restrict node network access
 
+## 💖 Support the Project
+
+KubeClaw is a solo project by [Kane](https://github.com/jianan1104). Keeping the infrastructure and the AI development environment (Pi) running costs money. If KubeClaw has saved you time or helped your workflow, please consider supporting the project.
+
+Every contribution helps keep the servers on and the code flowing.
+
+- **TRC20 USDT**: `TTnxj3ziwGwkQ1XzAAPiid8BXSEfbLoRjX`
+- **BTC**: `153UyveDDzN2t2ts42K6NfQdN3YJKRNfH8`
+- **ERC20 ETH**: `0x9b9ca1e5f081e28dd9e01fda6345eea84ea8e404`
+- **SOL USDC**: `EEYa9efT6KvjZqTmCPXExm9rHXv4jzEMaKax7CUpZqev`
+
+---
+
 ## 🗺️ Roadmap
 
 - [x] Core Docker image with dev tools
