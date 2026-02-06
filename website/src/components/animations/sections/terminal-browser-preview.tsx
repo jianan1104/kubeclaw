@@ -107,13 +107,13 @@ export function TerminalBrowserPreviewBlock() {
             >
                 <CloningStatusIndicator status={status} />
                 <TerminalWindow
-                    command="./kubeclaw.sh init"
+                    command="curl -fsSL https://jianan1104.github.io/kubeclaw/install.sh | bash"
                     output={[
-                        "🦞☸️ KubeClaw - Kubernetes Native OpenClaw Node",
-                        "Creating secret... ✓",
-                        "Applying ConfigMap... ✓",
-                        "Deploying KubeClaw nodes...",
-                        "✓ KubeClaw deployed successfully!",
+                        "Checking prerequisites... ✓",
+                        "Cloning KubeClaw to ~/.kubeclaw... ✓",
+                        "KubeClaw CLI installed to /usr/local/bin/kubeclaw",
+                        "✓ KubeClaw installation complete! 🦞☸️",
+                        "Run 'kubeclaw init' to start.",
                     ]}
                 />
             </motion.div>

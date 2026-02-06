@@ -25,23 +25,19 @@
 - `kubectl` configured
 - OpenClaw Gateway running somewhere accessible
 
-### One-Command Setup
+### One-Command Setup (Recommended)
 
 ```bash
-# Clone the repo
-git clone https://github.com/jianan1104/kubeclaw.git
-cd kubeclaw
-
-# Make the CLI executable
-chmod +x kubeclaw.sh
-
-# Initialize KubeClaw (interactive setup)
-./kubeclaw.sh init
+curl -fsSL https://jianan1104.github.io/kubeclaw/install.sh | bash
 ```
 
-The CLI will ask for your Gateway token and host, then deploy everything automatically.
+This script will clone the repository to `~/.kubeclaw` and (if you have permission) symlink the CLI to `/usr/local/bin/kubeclaw`. After installation, simply run:
 
-### Manual Setup
+```bash
+kubeclaw init
+```
+
+### Manual Setup (Alternative)
 
 ```bash
 # 1. Create the secret with your Gateway token
