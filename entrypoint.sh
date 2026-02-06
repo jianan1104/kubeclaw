@@ -117,10 +117,17 @@ log_info "Starting OpenClaw node..."
 log_info "Connecting to ws://${GATEWAY_HOST}:${GATEWAY_PORT}"
 
 # Build the command
+# Use --token to ensure token is explicitly passed if env var export isn't picked up
 CMD="openclaw node run"
 CMD="$CMD --host $GATEWAY_HOST"
 CMD="$CMD --port $GATEWAY_PORT"
 CMD="$CMD --display-name $NODE_NAME"
+CMD="$CMD --token $GATEWAY_TOKEN"
+
+# If KUBECLAW_POD_ID is provided, append it to description for Auto-Pairing Controller
+if [[ -n "$KUBECLAW_POD_ID" ]]; then
+    CMD="$CMD --desc $KUBECLAW_POD_ID"
+fi
 
 # Execute
 log_success "Node starting up. Waiting for Gateway connection..."
