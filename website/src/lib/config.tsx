@@ -55,7 +55,8 @@ export const siteConfig = {
                 ]
             },
             { id: 2, name: "How It Works", href: "#workflow" },
-            { id: 3, name: "FAQ", href: "#faq" },
+            { id: 3, name: "Dashboard", href: "/dashboard" },
+            { id: 4, name: "FAQ", href: "#faq" },
             { id: 4, name: "Docs", href: "https://github.com/jianan1104/kubeclaw#readme" },
             { id: 5, name: "GitHub", href: "https://github.com/jianan1104/kubeclaw" },
         ],
