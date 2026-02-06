@@ -1,0 +1,21 @@
+# =============================================================================
+# KubeClaw ConfigMap
+# =============================================================================
+# Configuration for KubeClaw node pods.
+# Customize these values for your environment.
+# =============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kubeclaw-config
+  labels:
+    app.kubernetes.io/name: kubeclaw
+    app.kubernetes.io/component: config
+data:
+  # Gateway connection settings
+  OPENCLAW_GATEWAY_HOST: "YOUR_GATEWAY_IP_OR_DNS"
+  OPENCLAW_GATEWAY_PORT: "18789"
+  
+  # Node behavior
+  OPENCLAW_AUTO_PAIR: "true"
+  OPENCLAW_LOG_LEVEL: "info"

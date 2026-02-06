@@ -1,34 +1,129 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: kubeclaw-config
-data:
-  OPENCLAW_GATEWAY_HOST: "YOUR_GATEWAY_IP"
-  OPENCLAW_GATEWAY_PORT: "18789"
----
+# =============================================================================
+# KubeClaw Deployment
+# =============================================================================
+# Deploys a pool of OpenClaw worker nodes as Kubernetes pods.
+# Scale up/down with: kubectl scale deployment kubeclaw-node --replicas=N
+# =============================================================================
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: kubeclaw-node
+  labels:
+    app.kubernetes.io/name: kubeclaw
+    app.kubernetes.io/component: node
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: kubeclaw-node
+      app.kubernetes.io/name: kubeclaw
+      app.kubernetes.io/component: node
   template:
     metadata:
       labels:
-        app: kubeclaw-node
+        app.kubernetes.io/name: kubeclaw
+        app.kubernetes.io/component: node
     spec:
+      # Graceful shutdown - give node time to disconnect cleanly
+      terminationGracePeriodSeconds: 30
+      
+      # Security context - run as non-root (optional, comment out if issues)
+      # securityContext:
+      #   runAsNonRoot: true
+      #   runAsUser: 1000
+      
       containers:
       - name: node
-        image: your-docker-username/kubeclaw:latest
+        image: ghcr.io/jianan1104/kubeclaw:latest
+        imagePullPolicy: Always
+        
+        # Environment from ConfigMap
         envFrom:
         - configMapRef:
             name: kubeclaw-config
+        
+        # Inject pod metadata (Downward API)
         env:
-        - name: OPENCLAW_GATEWAY_TOKEN
+        - name: POD_NAME
           valueFrom:
-            secretKeyRef:
-              name: kubeclaw-secret
-              key: token
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: OPENCLAW_NODE_NAME
+          value: "kubeclaw-$(POD_NAME)"
+        
+        # Token from Secret (mounted as file for security)
+        volumeMounts:
+        - name: token-secret
+          mountPath: /etc/kubeclaw
+          readOnly: true
+        
+        # Resource limits - adjust based on your workload
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "256Mi"
+          limits:
+            cpu: "2000m"
+            memory: "4Gi"
+        
+        # Health checks
+        livenessProbe:
+          exec:
+            command:
+            - /usr/local/bin/healthcheck.sh
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        
+        readinessProbe:
+          exec:
+            command:
+            - /usr/local/bin/healthcheck.sh
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 2
+      
+      volumes:
+      - name: token-secret
+        secret:
+          secretName: kubeclaw-secret
+          items:
+          - key: token
+            path: token
+
+---
+# =============================================================================
+# KubeClaw Horizontal Pod Autoscaler (Optional)
+# =============================================================================
+# Automatically scales nodes based on CPU usage.
+# Uncomment to enable auto-scaling.
+# =============================================================================
+# apiVersion: autoscaling/v2
+# kind: HorizontalPodAutoscaler
+# metadata:
+#   name: kubeclaw-node-hpa
+#   labels:
+#     app.kubernetes.io/name: kubeclaw
+# spec:
+#   scaleTargetRef:
+#     apiVersion: apps/v1
+#     kind: Deployment
+#     name: kubeclaw-node
+#   minReplicas: 2
+#   maxReplicas: 20
+#   metrics:
+#   - type: Resource
+#     resource:
+#       name: cpu
+#       target:
+#         type: Utilization
+#         averageUtilization: 70

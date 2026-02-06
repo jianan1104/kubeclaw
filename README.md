@@ -1,46 +1,178 @@
 # KubeClaw 🦞☸️
 
-**KubeClaw** is the enterprise-grade orchestration layer for [OpenClaw](https://openclaw.ai). It solves the "Node Scalability Problem" by turning OpenClaw nodes into cloud-native, auto-scaling microservices.
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
+[![Kubernetes](https://img.shields.io/badge/Kubernetes-1.25%2B-blue)](https://kubernetes.io)
+[![OpenClaw](https://img.shields.io/badge/OpenClaw-Compatible-orange)](https://openclaw.ai)
 
-## Why KubeClaw?
+**KubeClaw** is the enterprise-grade orchestration layer for [OpenClaw](https://openclaw.ai). It solves real-world environment problems by turning OpenClaw nodes into cloud-native, auto-scaling, self-healing microservices.
 
-OpenClaw is amazing for personal use, but as you scale your agent fleet, you run into:
-- **The Pairing Nightmare**: Manually approving 20 nodes via CLI? No thanks. KubeClaw automates node trust using K8s Secrets.
-- **Resource Exhaustion**: Large tasks can crash your host. KubeClaw isolates every task in a Pod with strict CPU/Memory limits.
-- **Unbounded Storage**: Remote skill caches can grow forever. KubeClaw uses ephemeral Pods and Persistent Volume Claims (PVC) to keep nodes clean.
-- **High Availability**: If a node goes down, KubeClaw (via K8s) brings it back immediately.
+> _"From personal AI assistant to production-grade agent infrastructure."_
 
-## Key Features
+## 🎯 Problems We Solve
 
-- **🚀 One-Command Cluster**: Deploy a full OpenClaw stack with a single Helm chart.
-- **🔄 Auto-Scaling Node Pools**: Scale from 1 to 1,000+ worker nodes with `kubectl scale`.
-- **🛡️ Secure Sandboxing**: Every node runs in a hardened container, preventing breakout.
-- **🤖 Agent Orchestration**: Move from "Personal AI" to "Agentic Infrastructure".
+| Problem | Without KubeClaw | With KubeClaw |
+|---------|-----------------|---------------|
+| **Security** | Agent runs on your host - can access everything | Isolated in containers with strict resource limits |
+| **Scalability** | One node per machine, manual setup | Scale 1→1000 nodes with `kubectl scale` |
+| **Environment** | "Works on my machine" syndrome | Pre-baked images with Python, Node.js, Git ready |
+| **Reliability** | Node crashes = manual restart | Kubernetes auto-heals failed nodes |
+| **Dependency Hell** | Install tools manually on each node | Everything pre-installed in the container |
 
-## Quick Start
+## 🚀 Quick Start
 
-### 1. Build & Push
+### Prerequisites
+- Kubernetes cluster (1.25+)
+- `kubectl` configured
+- OpenClaw Gateway running somewhere accessible
+
+### One-Command Setup
+
+```bash
+# Clone the repo
+git clone https://github.com/jianan1104/kubeclaw.git
+cd kubeclaw
+
+# Make the CLI executable
+chmod +x kubeclaw.sh
+
+# Initialize KubeClaw (interactive setup)
+./kubeclaw.sh init
+```
+
+The CLI will ask for your Gateway token and host, then deploy everything automatically.
+
+### Manual Setup
+
+```bash
+# 1. Create the secret with your Gateway token
+kubectl create secret generic kubeclaw-secret \
+  --from-literal=token=YOUR_GATEWAY_TOKEN
+
+# 2. Update the ConfigMap with your Gateway address
+vim k8s/configmap.yaml  # Edit OPENCLAW_GATEWAY_HOST
+
+# 3. Deploy
+kubectl apply -f k8s/configmap.yaml
+kubectl apply -f k8s/deployment.yaml
+```
+
+### Approve the Nodes
+
+On your Gateway machine:
+```bash
+# List pending node pairing requests
+openclaw nodes pending
+
+# Approve each node
+openclaw nodes approve <requestId>
+```
+
+## 📊 Operations
+
+```bash
+# Check status
+./kubeclaw.sh status
+
+# Scale to 10 nodes
+./kubeclaw.sh scale 10
+
+# View logs
+./kubeclaw.sh logs
+
+# Remove from cluster
+./kubeclaw.sh destroy
+```
+
+Or use `kubectl` directly:
+```bash
+kubectl get pods -l app.kubernetes.io/name=kubeclaw
+kubectl scale deployment kubeclaw-node --replicas=20
+kubectl logs -f deployment/kubeclaw-node
+```
+
+## 🐳 Docker Image
+
+The KubeClaw image comes pre-loaded with:
+
+| Category | Tools |
+|----------|-------|
+| **Languages** | Python 3.11+, Node.js 20, Bun |
+| **Python Libs** | numpy, pandas, scikit-learn, requests, beautifulsoup4 |
+| **Node.js** | TypeScript, tsx, pnpm, yarn, pm2 |
+| **CLI Tools** | git, curl, jq, vim, htop |
+| **OpenClaw** | openclaw CLI (latest) |
+
+### Build Your Own Image
+
 ```bash
 docker build -t your-registry/kubeclaw:latest .
 docker push your-registry/kubeclaw:latest
 ```
 
-### 2. Deploy to K8s
-```bash
-# Create the secret for your Gateway Token
-kubectl create secret generic kubeclaw-secret --from-literal=token=YOUR_GATEWAY_TOKEN
+Then update `k8s/deployment.yaml` to use your image.
 
-# Deploy the node pool
-kubectl apply -f k8s/deployment.yaml
+## 🏗️ Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                     Your Kubernetes Cluster                      │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐              │
+│  │ kubeclaw-1  │  │ kubeclaw-2  │  │ kubeclaw-N  │   ...        │
+│  │   (Pod)     │  │   (Pod)     │  │   (Pod)     │              │
+│  │             │  │             │  │             │              │
+│  │ Python/Node │  │ Python/Node │  │ Python/Node │              │
+│  │ OpenClaw    │  │ OpenClaw    │  │ OpenClaw    │              │
+│  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘              │
+│         │                │                │                      │
+│         └────────────────┼────────────────┘                      │
+│                          │ WebSocket                             │
+│                          ▼                                       │
+└─────────────────────────────────────────────────────────────────┘
+                           │
+                           │ (Internet/VPN)
+                           ▼
+                ┌─────────────────────┐
+                │  OpenClaw Gateway   │
+                │                     │
+                │  Your laptop/VPS    │
+                │  Running openclaw   │
+                └─────────────────────┘
 ```
 
-## Roadmap
+## 🔐 Security
 
-- [ ] **Helm Chart**: Simplify installation.
-- [ ] **Auto-Pairing Controller**: Securely bypass manual node approval within the cluster.
-- [ ] **Task Distribution**: Better load balancing across multiple worker pods.
-- [ ] **Monitoring**: Prometheus metrics for node health and token usage.
+- **Container Isolation**: Each node runs in its own container with cgroups/namespaces
+- **Resource Limits**: CPU and memory limits prevent runaway processes
+- **Secret Management**: Gateway tokens are stored as Kubernetes Secrets
+- **Network Policies**: (Coming soon) Restrict node network access
 
-## License
+## 🗺️ Roadmap
 
-Apache-2.0
+- [x] Core Docker image with dev tools
+- [x] Kubernetes Deployment manifests
+- [x] CLI tool for quick setup
+- [ ] Helm Chart for advanced customization
+- [ ] Auto-Pairing Controller (bypass manual approval for in-cluster nodes)
+- [ ] Prometheus metrics exporter
+- [ ] GPU-enabled image variant
+- [ ] Multi-Gateway support
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repo
+2. Create your feature branch (`git checkout -b feature/amazing`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing`)
+5. Open a Pull Request
+
+## 📜 License
+
+Apache-2.0 - see [LICENSE](LICENSE) for details.
+
+---
+
+Built with 🦞 by the KubeClaw community.
