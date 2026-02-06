@@ -31,10 +31,8 @@ export function Footer() {
                     </div>
                 ))}
 
-                <div className="flex flex-col gap-4 p-8 lg:pt-18 items-start md:items-center justify-start">
-                    <Icons.soc2 className="w-20 h-20" />
-                    <Icons.hipaa className="w-20 h-20" />
-                    <Icons.gdpr className="w-20 h-20" />
+                <div className="flex flex-col gap-4 p-8 lg:pt-18 items-start md:items-center justify-start text-muted-foreground italic text-xs">
+                    Infrastructure for the Agentic Era
                 </div>
             </div>
 

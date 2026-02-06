@@ -107,13 +107,13 @@ export function TerminalBrowserPreviewBlock() {
             >
                 <CloningStatusIndicator status={status} />
                 <TerminalWindow
-                    command="npx codeforge clone repo"
+                    command="./kubeclaw.sh init"
                     output={[
-                        "Cloning repository...",
-                        "Resolving deltas: 100% (1234/1234), done.",
-                        "Analyzing codebase...",
-                        "Setting up AI agent...",
-                        "✓ Repository cloned successfully",
+                        "🦞☸️ KubeClaw - Kubernetes Native OpenClaw Node",
+                        "Creating secret... ✓",
+                        "Applying ConfigMap... ✓",
+                        "Deploying KubeClaw nodes...",
+                        "✓ KubeClaw deployed successfully!",
                     ]}
                 />
             </motion.div>
@@ -121,9 +121,9 @@ export function TerminalBrowserPreviewBlock() {
             <AnimatePresence>
                 {status === "preview" && (
                     <BrowserPreview
-                        title="Your AI Agent is Ready"
-                        description="Start coding with AI-powered suggestions and automated code reviews."
-                        button={{ text: "Get Started", href: "#" }}
+                        title="Your KubeClaw Cluster is Ready"
+                        description="Scale your OpenClaw agents with kubectl scale. Kubernetes handles the rest."
+                        button={{ text: "View Pods", href: "#" }}
                     />
                 )}
             </AnimatePresence>

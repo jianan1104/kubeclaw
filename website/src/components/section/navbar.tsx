@@ -111,14 +111,7 @@ function DesktopNav() {
                     </div>
                     <div className="flex items-center justify-center border-border mx-2 mb-2 bg-muted px-10 py-6 rounded-3xl border">
                       <p className="text-base text-muted-foreground">
-                        Looking for a custom solution?{" "}
-                        <Link
-                          href="/contact"
-                          className="inline-flex items-center gap-1.5 font-medium text-primary hover:underline"
-                        >
-                          Let&apos;s talk
-                          <ArrowRight className="h-4 w-4" />
-                        </Link>
+                        Built for the OpenClaw Community
                       </p>
                     </div>
                   </div>
@@ -310,16 +303,8 @@ function MobileNav({
                   }}
                   className="mt-4 w-full px-0 py-3 text-center"
                 >
-                  <p className="text-sm text-muted-foreground">
-                    Looking for a custom solution?{" "}
-                    <Link
-                      href="/contact"
-                      onClick={onClose}
-                      className="inline-flex items-center gap-1 font-medium text-primary hover:underline"
-                    >
-                      Let&apos;s talk
-                      <ArrowRight className="h-3.5 w-3.5" />
-                    </Link>
+                  <p className="text-sm text-muted-foreground italic">
+                    Infrastructure for the Agentic Era
                   </p>
                 </motion.div>
               </div>
