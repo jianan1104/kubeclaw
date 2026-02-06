@@ -1,0 +1,41 @@
+replicaCount: 1
+
+image:
+  repository: jianan1104/kubeclaw
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+gateway:
+  host: "your-gateway-host"
+  port: 18789
+  token: "" # Set this or use existingSecret
+
+existingSecret: ""
+
+resources:
+  limits:
+    cpu: 1000m
+    memory: 2Gi
+  requests:
+    cpu: 200m
+    memory: 512Mi
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+# Auto-Pairing Controller
+autoPairing:
+  enabled: true
+  pollInterval: 30
+  image:
+    repository: jianan1104/kubeclaw-auto-pairing
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  resources:
+    limits:
+      cpu: 100m
+      memory: 128Mi
+    requests:
+      cpu: 50m
+      memory: 64Mi

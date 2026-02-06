@@ -1,0 +1,81 @@
+{{- if .Values.autoPairing.enabled }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "kubeclaw.fullname" . }}-auto-pairing
+  labels:
+    {{- include "kubeclaw.labels" . | nindent 4 }}
+    app.kubernetes.io/component: auto-pairing
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "kubeclaw.fullname" . }}-pod-reader
+  labels:
+    {{- include "kubeclaw.labels" . | nindent 4 }}
+    app.kubernetes.io/component: auto-pairing
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "kubeclaw.fullname" . }}-pod-reader
+  labels:
+    {{- include "kubeclaw.labels" . | nindent 4 }}
+    app.kubernetes.io/component: auto-pairing
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "kubeclaw.fullname" . }}-pod-reader
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "kubeclaw.fullname" . }}-auto-pairing
+    namespace: {{ .Release.Namespace }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "kubeclaw.fullname" . }}-auto-pairing
+  labels:
+    {{- include "kubeclaw.labels" . | nindent 4 }}
+    app.kubernetes.io/component: auto-pairing
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "kubeclaw.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: auto-pairing
+  template:
+    metadata:
+      labels:
+        {{- include "kubeclaw.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: auto-pairing
+    spec:
+      serviceAccountName: {{ include "kubeclaw.fullname" . }}-auto-pairing
+      containers:
+        - name: auto-pairing
+          image: "{{ .Values.autoPairing.image.repository }}:{{ .Values.autoPairing.image.tag }}"
+          imagePullPolicy: {{ .Values.autoPairing.image.pullPolicy }}
+          env:
+            - name: OPENCLAW_GATEWAY_HOST
+              value: {{ .Values.gateway.host | quote }}
+            - name: OPENCLAW_GATEWAY_PORT
+              value: {{ .Values.gateway.port | quote }}
+            - name: OPENCLAW_GATEWAY_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ if .Values.existingSecret }}{{ .Values.existingSecret }}{{ else }}{{ include "kubeclaw.fullname" . }}-secret{{ end }}
+                  key: token
+            - name: POLL_INTERVAL
+              value: {{ .Values.autoPairing.pollInterval | quote }}
+          resources:
+            {{- toYaml .Values.autoPairing.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}
