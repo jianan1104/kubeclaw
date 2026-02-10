@@ -5,7 +5,7 @@
 # It includes Python, Node.js, common dev tools, and the OpenClaw CLI.
 # =============================================================================
 
-FROM node:20-bookworm AS base
+FROM node:22-bookworm AS base
 
 # Metadata
 LABEL maintainer="Kane <jianan1104@github>"
@@ -86,22 +86,11 @@ RUN python3 -m pip install --no-cache-dir --break-system-packages \
 # =============================================================================
 # Node.js Global Packages
 # =============================================================================
-RUN npm install -g \
-    # OpenClaw CLI (the star of the show)
-    openclaw \
-    # Dev tools
-    typescript \
-    ts-node \
-    tsx \
-    esbuild \
-    vite \
-    # Utilities
-    npm-check-updates \
-    nodemon \
-    pm2 \
-    # Package managers
-    pnpm \
-    yarn
+RUN npm install -g --loglevel warn openclaw@latest
+RUN npm install -g --loglevel warn typescript ts-node tsx
+RUN npm install -g --loglevel warn esbuild vite
+RUN npm install -g --loglevel warn npm-check-updates nodemon
+RUN npm install -g --loglevel warn pm2 pnpm
 
 # =============================================================================
 # Bun Runtime (Fast JS/TS alternative)

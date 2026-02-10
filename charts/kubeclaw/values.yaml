@@ -6,9 +6,9 @@ image:
   tag: "latest"
 
 gateway:
-  host: "your-gateway-host"
+  host: "192.168.64.2"
   port: 18789
-  token: "" # Set this or use existingSecret
+  token: "a5581917b0d05b60d2fb3b27fbe5d81874ccab6f8ae0201c" # Set this or use existingSecret
 
 existingSecret: ""
 
@@ -39,3 +39,25 @@ autoPairing:
     requests:
       cpu: 50m
       memory: 64Mi
+
+# Prometheus Metrics Exporter
+metricsExporter:
+  enabled: true
+  pollInterval: 30
+  port: 9090
+  image:
+    repository: jianan1104/kubeclaw-metrics-exporter
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  resources:
+    limits:
+      cpu: 100m
+      memory: 128Mi
+    requests:
+      cpu: 50m
+      memory: 64Mi
+  serviceMonitor:
+    enabled: false
+    interval: "30s"
+    scrapeTimeout: ""
+    additionalLabels: {}

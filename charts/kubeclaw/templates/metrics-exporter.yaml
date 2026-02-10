@@ -1,0 +1,144 @@
+{{- if .Values.metricsExporter.enabled }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "kubeclaw.fullname" . }}-metrics-exporter
+  labels:
+    {{- include "kubeclaw.labels" . | nindent 4 }}
+    app.kubernetes.io/component: metrics-exporter
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "kubeclaw.fullname" . }}-metrics-reader
+  labels:
+    {{- include "kubeclaw.labels" . | nindent 4 }}
+    app.kubernetes.io/component: metrics-exporter
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "kubeclaw.fullname" . }}-metrics-reader
+  labels:
+    {{- include "kubeclaw.labels" . | nindent 4 }}
+    app.kubernetes.io/component: metrics-exporter
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "kubeclaw.fullname" . }}-metrics-reader
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "kubeclaw.fullname" . }}-metrics-exporter
+    namespace: {{ .Release.Namespace }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "kubeclaw.fullname" . }}-metrics-exporter
+  labels:
+    {{- include "kubeclaw.labels" . | nindent 4 }}
+    app.kubernetes.io/component: metrics-exporter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "kubeclaw.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: metrics-exporter
+  template:
+    metadata:
+      labels:
+        {{- include "kubeclaw.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: metrics-exporter
+    spec:
+      serviceAccountName: {{ include "kubeclaw.fullname" . }}-metrics-exporter
+      containers:
+        - name: metrics-exporter
+          image: "{{ .Values.metricsExporter.image.repository }}:{{ .Values.metricsExporter.image.tag }}"
+          imagePullPolicy: {{ .Values.metricsExporter.image.pullPolicy }}
+          ports:
+            - name: metrics
+              containerPort: {{ .Values.metricsExporter.port }}
+              protocol: TCP
+          env:
+            - name: OPENCLAW_GATEWAY_HOST
+              value: {{ .Values.gateway.host | quote }}
+            - name: OPENCLAW_GATEWAY_PORT
+              value: {{ .Values.gateway.port | quote }}
+            - name: OPENCLAW_GATEWAY_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ if .Values.existingSecret }}{{ .Values.existingSecret }}{{ else }}{{ include "kubeclaw.fullname" . }}-secret{{ end }}
+                  key: token
+            - name: POLL_INTERVAL
+              value: {{ .Values.metricsExporter.pollInterval | quote }}
+            - name: METRICS_PORT
+              value: {{ .Values.metricsExporter.port | quote }}
+          livenessProbe:
+            httpGet:
+              path: /metrics
+              port: metrics
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /metrics
+              port: metrics
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            {{- toYaml .Values.metricsExporter.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "kubeclaw.fullname" . }}-metrics
+  labels:
+    {{- include "kubeclaw.labels" . | nindent 4 }}
+    app.kubernetes.io/component: metrics-exporter
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.metricsExporter.port }}
+      targetPort: metrics
+      protocol: TCP
+      name: metrics
+  selector:
+    {{- include "kubeclaw.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: metrics-exporter
+{{- if .Values.metricsExporter.serviceMonitor.enabled }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "kubeclaw.fullname" . }}-metrics
+  labels:
+    {{- include "kubeclaw.labels" . | nindent 4 }}
+    app.kubernetes.io/component: metrics-exporter
+    {{- with .Values.metricsExporter.serviceMonitor.additionalLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "kubeclaw.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: metrics-exporter
+  endpoints:
+    - port: metrics
+      interval: {{ .Values.metricsExporter.serviceMonitor.interval | default "30s" }}
+      {{- if .Values.metricsExporter.serviceMonitor.scrapeTimeout }}
+      scrapeTimeout: {{ .Values.metricsExporter.serviceMonitor.scrapeTimeout }}
+      {{- end }}
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
+{{- end }}
+{{- end }}

@@ -1,0 +1,9 @@
+website/
+.git/
+.github/
+charts/
+k8s/
+docs/
+*.md
+LICENSE
+.dockerignore

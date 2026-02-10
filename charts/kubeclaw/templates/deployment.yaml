@@ -19,6 +19,10 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
+            - name: KUBECLAW_POD_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.uid
             - name: OPENCLAW_GATEWAY_HOST
               value: {{ .Values.gateway.host | quote }}
             - name: OPENCLAW_GATEWAY_PORT

@@ -150,8 +150,8 @@ Then update `k8s/deployment.yaml` to use your image.
 - [x] Kubernetes Deployment manifests
 - [x] CLI tool for quick setup
 - [x] Helm Chart for advanced customization
-- [ ] Auto-Pairing Controller (logic design complete)
-- [ ] Prometheus metrics exporter
+- [x] Auto-Pairing Controller
+- [x] Prometheus metrics exporter
 - [ ] GPU-enabled image variant
 - [ ] Multi-Gateway support
 
